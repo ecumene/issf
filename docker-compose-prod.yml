@@ -1,8 +1,7 @@
 # ISSF - Information System on Small Scale Fisheries
-# Author: Joshua Murphy
+# Author: Joshua Murphy, Mitchell
 # Date: December 23rd, 2018
-# https://github.com/toobigtoignore/issf
-
+# https://github.com/ecumene/issf
 # Docker Compose file to orchestrate the containers needed to run ISSF
 # as well as a PostgreSQL/PostGIS database
 
@@ -17,6 +16,9 @@ services:
     restart: always
     depends_on:
       - db
+    networks:
+      - web
+      - default
     environment:
       - DJANGO_SETTINGS_MODULE=issf_prod.settings
     volumes:
@@ -51,6 +53,8 @@ services:
     depends_on:
       - web
     restart: always
+    networks:
+      - web
     volumes:
       - "./:/src:Z"
       - "./data/nginx:/etc/nginx/conf.d:Z"
@@ -62,16 +66,10 @@ services:
         max-file: "10"
     labels:
       traefik.enable: true
-      traefik.frontend.rule: "Host: issfcloud.toobigtoignore.net, www.issfcloud.toobigtoignore.net"
+      traefik.frontend.rule: "Host: issfdev.ecumene.xyz, www.issfdev.ecumene.xyz"
       traefik.port: 80
       traefik.frontend.entryPoints: "https"
-  traefik:
-    image: traefik # The official Traefik docker image
-    ports:
-      - "80:80"     # The HTTP port
-      - "443:443"
-    restart: always
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock # So that Traefik can listen to the Docker events
-      - ./data/traefik/traefik.toml:/traefik.toml
-      - ./data/traefik:/traefik_data/
+
+networks:
+  web:
+    external: true
